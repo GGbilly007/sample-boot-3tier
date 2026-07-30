@@ -2,6 +2,7 @@ package th.mfu.service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 /**
  * The REST service - the middle tier. Port 8080.
@@ -26,6 +27,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 //       This is the first row of the lab's troubleshooting table - you will
 //       meet it again in lab-web-3tier.
 @SpringBootApplication
+@EntityScan(basePackages = { "th.mfu.domain" })
 public class App {
     public static void main(String[] args) {
         SpringApplication.run(App.class, args);

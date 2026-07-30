@@ -1,44 +1,87 @@
 package th.mfu.service.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import java.time.LocalDate;
+
 /**
  * What a book looks like ON THE WIRE.
- *
- * Right now this class is empty and nothing uses it - the controller still
- * sends the Book entity straight out. Compare what that produces today:
- *
- *   {"id":10001,"title":"1984","author":"George Orwell","addedDate":"15-01-2026",
- *    "category":{"id":10001,"name":"Fiction","description":"..."},"publish-year":1949}
- *
- * ...with what we want by the end of the session:
- *
- *   {"id":10001,"title":"1984","author":"George Orwell","publish-year":1949,
- *    "added-date":"15-01-2026","category_id":10001,"category_name":"Fiction"}
- *
- * Flat instead of nested, and the client gets the category name without a
- * second request.
  */
 public class BookDTO {
 
-    // TODO: (step 2) Give this class the fields the wire format needs:
-    //
-    //   Long    id
-    //   String  title
-    //   String  author
-    //   Integer year          -> @JsonProperty("publish-year")
-    //   LocalDate addedDate   -> @JsonProperty("added-date")
-    //                            plus @JsonSerialize / @JsonDeserialize with
-    //                            LocalDateSerializer / LocalDateDeserializer
-    //                            on the GETTER (move them here from the entity)
-    //   Long    categoryId    -> @JsonProperty("category_id")
-    //   String  categoryName  -> @JsonProperty("category_name")
-    //
-    // Then generate the getters and setters.
-    //
-    // WHY Integer AND NOT int: a primitive can never be null, and the partial
-    // update in step 5 works by skipping the fields that ARE null. With `int`,
-    // a PATCH that does not mention the year would silently overwrite it with 0.
-    //
-    // Notice there is no "transactions" field and no "books" field anywhere in
-    // these DTOs. That is the point: the DTO decides what travels, so the
-    // @JsonIgnore currently sitting on Category.books becomes unnecessary.
+    private Long id;
+    private String title;
+    private String author;
+
+    @JsonProperty("publish-year")
+    private Integer year;
+
+    @JsonProperty("added-date")
+    @JsonSerialize(using = LocalDateSerializer.class)
+    @JsonDeserialize(using = LocalDateDeserializer.class)
+    private LocalDate addedDate;
+
+    @JsonProperty("category_id")
+    private Long categoryId;
+
+    @JsonProperty("category_name")
+    private String categoryName;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public Integer getYear() {
+        return year;
+    }
+
+    public void setYear(Integer year) {
+        this.year = year;
+    }
+
+    public LocalDate getAddedDate() {
+        return addedDate;
+    }
+
+    public void setAddedDate(LocalDate addedDate) {
+        this.addedDate = addedDate;
+    }
+
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
 }

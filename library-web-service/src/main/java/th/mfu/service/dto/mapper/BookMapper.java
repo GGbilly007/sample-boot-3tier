@@ -1,6 +1,13 @@
 package th.mfu.service.dto.mapper;
 
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+
+import th.mfu.domain.Book;
+import th.mfu.service.dto.BookDTO;
 
 /**
  * The ASSEMBLER for Book.
@@ -23,33 +30,12 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface BookMapper {
 
-    // TODO: (step 3) Declare the two directions.
-    //
-    // (a) entity -> DTO, for sending a book out. The two @Mapping lines flatten
-    //     the relationship: the entity's category.id and category.name become
-    //     two plain fields on the DTO.
-    //
-    //     @Mapping(source = "category.id",   target = "categoryId")
-    //     @Mapping(source = "category.name", target = "categoryName")
-    //     void updateBookFromEntity(Book entity, @MappingTarget BookDTO dto);
-    //
-    // (b) DTO -> entity, for a create and for the PARTIAL UPDATE in step 5.
-    //     This is the important one:
-    //
-    //     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    //     @Mapping(target = "id",       ignore = true)
-    //     @Mapping(target = "category", ignore = true)
-    //     void updateBookFromDto(BookDTO dto, @MappingTarget Book entity);
-    //
-    //     IGNORE means: if a field of the DTO is null, DO NOT TOUCH the entity.
-    //     That single setting is the whole partial-update feature.
-    //
-    //     id and category are ignored because the controller decides those -
-    //     the id comes from the URL, and the category must be looked up as a
-    //     real row before it can be attached.
-    //
-    // Imports you will need:
-    //   org.mapstruct.BeanMapping, Mapping, MappingTarget,
-    //   org.mapstruct.NullValuePropertyMappingStrategy
-    //   th.mfu.domain.Book, th.mfu.service.dto.BookDTO
+    @Mapping(source = "category.id", target = "categoryId")
+    @Mapping(source = "category.name", target = "categoryName")
+    void updateBookFromEntity(Book entity, @MappingTarget BookDTO dto);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "category", ignore = true)
+    void updateBookFromDto(BookDTO dto, @MappingTarget Book entity);
 }

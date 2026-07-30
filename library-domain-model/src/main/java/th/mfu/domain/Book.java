@@ -9,10 +9,6 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
 /**
  * A book in the library.
  *
@@ -42,7 +38,6 @@ public class Book {
     private long id;
     private String title;
     private String author;
-    @JsonProperty("publish-year")
     private int year;
     private LocalDate addedDate;
 
@@ -91,8 +86,6 @@ public class Book {
         this.year = year;
     }
 
-    @JsonSerialize(using = LocalDateSerializer.class)
-    @JsonDeserialize(using = LocalDateDeserializer.class)
     public LocalDate getAddedDate() {
         return addedDate;
     }

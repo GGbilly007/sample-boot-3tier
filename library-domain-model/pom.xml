@@ -27,14 +27,5 @@
             <artifactId>mysql-connector-java</artifactId>
         </dependency>
 
-        <!--
-            TODO (step 6): once the Jackson annotations have moved out of the
-            entities and onto the DTOs, DELETE this dependency. If the module
-            still compiles without it, the entities are properly free of JSON.
-        -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
     </dependencies>
 </project>

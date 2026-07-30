@@ -75,27 +75,34 @@
         function loadBooks() {
             $('#bookList').html('Loading...');
 
-            // TODO: (step 8a) Fetch the books and draw them.
-            //
-            //   $.ajax({
-            //       type: 'GET',
-            //       url: SERVICE + '/books',
-            //       success: function (books) { ...build the table... },
-            //       error:   function (error) { console.error(error); }
-            //   });
-            //
-            // Build a row per book. Use the DTO's JSON names - NOT the entity's
-            // Java field names:
-            //
-            //   book.id, book.title, book.author,
-            //   book['publish-year'], book['added-date'],
-            //   book.category_name
-            //
-            // (book['publish-year'] needs the bracket form: the minus sign
-            //  makes book.publish-year invalid JavaScript.)
-            //
-            // Until you write this, the table below stays empty.
-            $('#bookList').html('<p class="err">TODO step 8a: loadBooks() is not written yet.</p>');
+            $.ajax({
+                type: 'GET',
+                url: SERVICE + '/books',
+                success: function (books) {
+                    if (!books || books.length === 0) {
+                        $('#bookList').html('<p>No books found.</p>');
+                        return;
+                    }
+
+                    var rows = '<table><thead><tr><th>ID</th><th>Title</th><th>Author</th><th>Publish year</th><th>Added date</th><th>Category</th></tr></thead><tbody>';
+                    books.forEach(function (book) {
+                        rows += '<tr>' +
+                            '<td>' + (book.id || '') + '</td>' +
+                            '<td>' + (book.title || '') + '</td>' +
+                            '<td>' + (book.author || '') + '</td>' +
+                            '<td>' + (book['publish-year'] || '') + '</td>' +
+                            '<td>' + (book['added-date'] || '') + '</td>' +
+                            '<td>' + (book.category_name || '') + '</td>' +
+                            '</tr>';
+                    });
+                    rows += '</tbody></table>';
+                    $('#bookList').html(rows);
+                },
+                error: function (error) {
+                    console.error(error);
+                    $('#bookList').html('<p class="err">Unable to load books.</p>');
+                }
+            });
         }
 
         loadBooks();
@@ -116,22 +123,20 @@
                 category_id: parseInt($('#categoryId').val(), 10)
             };
 
-            // TODO: (step 8b) POST bookData to SERVICE + '/books' as JSON, then
-            //       call loadBooks() again when it succeeds.
-            //
-            //   $.ajax({
-            //       type: 'POST',
-            //       url: SERVICE + '/books',
-            //       data: JSON.stringify(bookData),
-            //       contentType: 'application/json',
-            //       success: function (created) { loadBooks(); },
-            //       error:   function (error) { console.error(error); }
-            //   });
-            //
-            // contentType matters: without it jQuery sends a form encoding and
-            // Spring answers 415 Unsupported Media Type.
-            console.log('TODO step 8b - would send:', bookData);
-            $('#createResult').html('<span class="err">TODO step 8b</span>');
+            $.ajax({
+                type: 'POST',
+                url: SERVICE + '/books',
+                data: JSON.stringify(bookData),
+                contentType: 'application/json',
+                success: function (created) {
+                    $('#createResult').html('<span class="ok">Created book #' + created.id + '</span>');
+                    loadBooks();
+                },
+                error: function (error) {
+                    console.error(error);
+                    $('#createResult').html('<span class="err">Unable to create book.</span>');
+                }
+            });
         });
 
         // PARTIAL UPDATE - one field only
@@ -141,14 +146,20 @@
             // Only the title. No author, no year, no date.
             var patchData = { title: $('#patchTitle').val() };
 
-            // TODO: (step 8c) Send this with type 'PATCH' to
-            //       SERVICE + '/books/' + $('#patchId').val(), then reload.
-            //
-            // When it works, the row in the table keeps its author and year and
-            // only the title changes. If they all go blank, the mapper is
-            // missing its IGNORE setting - go back to step 3.
-            console.log('TODO step 8c - would send:', patchData);
-            $('#patchResult').html('<span class="err">TODO step 8c</span>');
+            $.ajax({
+                type: 'PATCH',
+                url: SERVICE + '/books/' + $('#patchId').val(),
+                data: JSON.stringify(patchData),
+                contentType: 'application/json',
+                success: function (updated) {
+                    $('#patchResult').html('<span class="ok">Updated book #' + updated.id + '</span>');
+                    loadBooks();
+                },
+                error: function (error) {
+                    console.error(error);
+                    $('#patchResult').html('<span class="err">Unable to patch book.</span>');
+                }
+            });
         });
     });
 </script>
