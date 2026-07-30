@@ -64,6 +64,13 @@ Then open <http://localhost:8081/library.html>.
 > The service will **not** start until step 1 of [TODO.md](TODO.md) is done.
 > That is deliberate — the error it prints is the lesson.
 
+## Trying the API by hand
+
+Import [postman/library-3tier.postman_collection.json](postman/library-3tier.postman_collection.json)
+into Postman. Every endpoint is there, with the request bodies for before *and*
+after the DTO, so you can watch the same URL change shape as you work.
+See [postman/README.md](postman/README.md).
+
 ## Checking your work
 
 ```bash

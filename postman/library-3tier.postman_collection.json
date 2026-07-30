@@ -1,0 +1,508 @@
+{
+  "info": {
+    "name": "Library 3-tier (Day 4)",
+    "_postman_id": "9f1c4d20-3b7a-4e91-8f52-0d4a7c6e1b01",
+    "description": "Every endpoint of `library-web-service`, ready to click.\n\nThe service runs on port 8080 and all paths start with `/api`.\nStart it from the TOP folder of the project:\n\n    mvn install -DskipTests\n    mvn -pl library-web-service spring-boot:run\n\n### How the folders work\n\nThe project changes shape while you work on it, so the same endpoint needs two\ndifferent request bodies at two different times.\n\n- **Folder 1** is the shape the service speaks **today**, before you write the DTO.\n  A book carries a nested `category` object.\n- **Folder 2** is the shape it speaks **after steps 2 to 5**.\n  A book is flat: `category_id` and `category_name`, no nesting.\n\nRun folder 1 first and look at the JSON. Then do the steps, then run folder 2.\nSeeing the same endpoint answer differently is the whole lesson.\n\n### Variables\n\n`baseUrl` is `http://localhost:8080/api`. Change it in one place if your port differs.\n`bookId` is 10002 (\"1984\") - a book that `data.sql` always creates.\n`newBookId` fills itself in after you create a book, so DELETE has something to delete.\n\n### One thing Postman cannot show you\n\nCORS. Only a browser enforces it, so step 7 looks fine from here even when it is\nbroken. \"It works in Postman\" proves nothing about the web page.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api",
+      "type": "string"
+    },
+    {
+      "key": "bookId",
+      "value": "10002",
+      "type": "string"
+    },
+    {
+      "key": "categoryId",
+      "value": "10002",
+      "type": "string"
+    },
+    {
+      "key": "newBookId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Is the service up?",
+      "description": "Run these two first. They touch no database and no DTO, so if they answer, the service itself is healthy.",
+      "item": [
+        {
+          "name": "GET /hi",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/hi",
+              "host": ["{{baseUrl}}"],
+              "path": ["hi"]
+            },
+            "description": "The smallest possible endpoint.\nAnswers the plain text `Hi There!`.\n\nIf this fails, nothing else in the collection will work. Check that\n`spring-boot:run` is still going and that MySQL is running."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /hello/{name}",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/hello/Somchai",
+              "host": ["{{baseUrl}}"],
+              "path": ["hello", "Somchai"]
+            },
+            "description": "Shows a path variable.\nThe `Somchai` part of the URL arrives in the method as `@PathVariable String name`.\n\nChange the name in the URL and send it again."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "1. Books - before the DTO (entity shape)",
+      "description": "The service as it is on day 4 morning: the `Book` entity goes straight out as JSON.\n\nLook at what comes back. Every book drags a whole nested `category` object with it,\nincluding a description nobody asked for. That is the problem the DTO solves.",
+      "item": [
+        {
+          "name": "List all books",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/books",
+              "host": ["{{baseUrl}}"],
+              "path": ["books"]
+            },
+            "description": "`GET /api/books` - the ten books from `data.sql`.\n\nRead one entry closely:\n\n    {\"id\":10002,\"title\":\"1984\",\"author\":\"George Orwell\",\n     \"addedDate\":\"15-01-2026\",\n     \"category\":{\"id\":10002,\"name\":\"Science Fiction\",\"description\":\"...\"},\n     \"publish-year\":1949}\n\nNested, and mixed naming: `addedDate` in camelCase but `publish-year` with a minus\nsign, because the entity carries a `@JsonProperty`. The DTO will make all of it\nconsistent."
+          },
+          "response": []
+        },
+        {
+          "name": "Get one book by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/books/{{bookId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["books", "{{bookId}}"]
+            },
+            "description": "`GET /api/books/10002` - \"1984\".\n\nKeep this response open in a second tab. After step 4 you will send the exact same\nrequest and the answer will look different."
+          },
+          "response": []
+        },
+        {
+          "name": "Get a book that does not exist (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/books/999999",
+              "host": ["{{baseUrl}}"],
+              "path": ["books", "999999"]
+            },
+            "description": "There is no book 999999, so the controller answers **404 Not Found** with an empty body.\n\nAn API says \"I could not find it\" with a status code, not with an error message in a\n200 response. Check the status at the top of the response pane."
+          },
+          "response": []
+        },
+        {
+          "name": "Search books by title",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/books/title/the",
+              "host": ["{{baseUrl}}"],
+              "path": ["books", "title", "the"]
+            },
+            "description": "`GET /api/books/title/the` - every book whose title contains \"the\", ignoring case.\n\nThe repository method is `findByTitleContainingIgnoreCase`. Spring Data wrote the\nquery from that name alone.\n\nTry `gatsby`, or `THE`, and watch the SQL appear in the terminal running the service."
+          },
+          "response": []
+        },
+        {
+          "name": "Search books by year",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/books/year/1949",
+              "host": ["{{baseUrl}}"],
+              "path": ["books", "year", "1949"]
+            },
+            "description": "`GET /api/books/year/1949` - the books published that year.\n\n`data.sql` has books from 1813, 1925, 1932, 1937, 1949, 1951, 1953, 1960, 1967 and 1987.\nAn empty list `[]` is a correct answer for any other year - not an error."
+          },
+          "response": []
+        },
+        {
+          "name": "Create a book (nested category)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Remembers the id of the book you just created, so the DELETE",
+                  "// request below has something to delete.",
+                  "// The response is plain text before step 4 and JSON after it,",
+                  "// so this handles both.",
+                  "let id = null;",
+                  "try {",
+                  "    id = pm.response.json().id;",
+                  "} catch (e) {",
+                  "    const found = pm.response.text().match(/\\d+/);",
+                  "    if (found) { id = found[0]; }",
+                  "}",
+                  "if (id) {",
+                  "    pm.collectionVariables.set('newBookId', String(id));",
+                  "    console.log('newBookId = ' + id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Animal Farm\",\n  \"author\": \"George Orwell\",\n  \"publish-year\": 1945,\n  \"addedDate\": \"30-07-2026\",\n  \"category\": {\n    \"id\": {{categoryId}}\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/books",
+              "host": ["{{baseUrl}}"],
+              "path": ["books"]
+            },
+            "description": "`POST /api/books` - answers **201 Created**.\n\nThis is the body the service needs **today**, and it is awkward:\n\n    \"category\": { \"id\": 10002 }\n\nThe client has to know the entity's inner shape and wrap one number in an object.\nAfter step 4 the same request becomes `\"category_id\": 10002` - see folder 2.\n\nThree things to notice:\n\n- `Content-Type: application/json` is required. Without it Spring answers\n  **415 Unsupported Media Type**.\n- The date is `dd-MM-yyyy`, because `LocalDateDeserializer` says so.\n  `2026-07-30` will fail.\n- Do not send an `id`. Hibernate generates it.\n\nThe answer is a **sentence**, not JSON: `Book created with ID: 11`. That is the\nmethod returning `ResponseEntity<String>`. Step 4 changes it to return the saved\nbook as a DTO, which is what a REST client actually wants."
+          },
+          "response": []
+        },
+        {
+          "name": "Create a book with a bad category (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Book With No Category\",\n  \"author\": \"Nobody\",\n  \"publish-year\": 2026,\n  \"category\": {\n    \"id\": 999999\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/books",
+              "host": ["{{baseUrl}}"],
+              "path": ["books"]
+            },
+            "description": "Category 999999 does not exist, so the controller answers **400 Bad Request** and\nsaves nothing.\n\nThe category must already exist in this project - creating a book does not create\nits category. In `lab-web-3tier` it is the other way round, because the lab uses\n`@ManyToOne(cascade = CascadeType.ALL)`."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete the book you created",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/books/{{newBookId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["books", "{{newBookId}}"]
+            },
+            "description": "`DELETE /api/books/{id}` - **200 OK**, or **404** if that id is gone already.\n\n`{{newBookId}}` was filled in by the create request above, so run that one first.\n\nDeleting one of the ten seeded books is safe too. `ddl-auto=create-drop` rebuilds\nthe tables and re-runs `data.sql` every time the service restarts."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Books - after the DTO (steps 2 to 5)",
+      "description": "Run this folder **after** you finish steps 2, 3, 4 and 5.\n\nBefore that, the DTO requests fail in a way that is worth seeing once:\nthe body you send does not fit the entity, so nothing you sent arrives.",
+      "item": [
+        {
+          "name": "Get one book - now flat",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/books/{{bookId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["books", "{{bookId}}"]
+            },
+            "description": "The same URL as in folder 1. Compare the two answers side by side.\n\n    {\"id\":10002,\"title\":\"1984\",\"author\":\"George Orwell\",\n     \"publish-year\":1949,\"added-date\":\"15-01-2026\",\n     \"category_id\":10002,\"category_name\":\"Science Fiction\"}\n\nFlat. Consistently named. No `description`.\nAnd the client still learns the category name without a second request - that is\nthe \"reduce the number of calls\" argument for a DTO.\n\nNo `transactions` list either, because `BookDTO` has no such field. The DTO decides\nwhat travels."
+          },
+          "response": []
+        },
+        {
+          "name": "List all books - now flat",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/books",
+              "host": ["{{baseUrl}}"],
+              "path": ["books"]
+            },
+            "description": "Ten flat books.\n\nThis is the response the web page reads in step 8. It uses the DTO's JSON names,\nso in jQuery you write `book['publish-year']` and `book.category_name` - not\n`book.year` and not `book.category.name`."
+          },
+          "response": []
+        },
+        {
+          "name": "Create a book (flat category_id)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let id = null;",
+                  "try {",
+                  "    id = pm.response.json().id;",
+                  "} catch (e) {",
+                  "    const found = pm.response.text().match(/\\d+/);",
+                  "    if (found) { id = found[0]; }",
+                  "}",
+                  "if (id) {",
+                  "    pm.collectionVariables.set('newBookId', String(id));",
+                  "    console.log('newBookId = ' + id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Animal Farm\",\n  \"author\": \"George Orwell\",\n  \"publish-year\": 1945,\n  \"added-date\": \"30-07-2026\",\n  \"category_id\": {{categoryId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/books",
+              "host": ["{{baseUrl}}"],
+              "path": ["books"]
+            },
+            "description": "The same book as in folder 1, with the body a client would rather write:\none flat `category_id` instead of a nested object.\n\nAnswers **201 Created**, and the body is now the saved book as a DTO - with the\nid the database gave it.\n\nThis is the request `testCreateAcceptsTheDtoShape` in `BookResourceIT` sends."
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH - send only the title",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"1984 (revised)\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/books/{{bookId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["books", "{{bookId}}"]
+            },
+            "description": "**The point of the whole session.** Step 5.\n\nOne field goes in. Everything else must survive:\n\n    {\"id\":10002,\"title\":\"1984 (revised)\",\"author\":\"George Orwell\",\n     \"publish-year\":1949,\"added-date\":\"15-01-2026\",\n     \"category_id\":10002,\"category_name\":\"Science Fiction\"}\n\nIt survives because the controller **loads the existing book first** and the mapper\nonly copies fields that are not null. That `if (dto.getTitle() != null)` in the\ngenerated `BookMapperImpl` is the entire feature.\n\nIf the author, year and date come back `null`, it is one of two things:\n`@BeanMapping(nullValuePropertyMappingStrategy = IGNORE)` is missing, or a `BookDTO`\nfield is `int` instead of `Integer`. Go back to step 2.\n\nNow send it a second time. Same answer - a PATCH is safe to repeat."
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH a book that does not exist (404)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Nothing to patch\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/books/999999",
+              "host": ["{{baseUrl}}"],
+              "path": ["books", "999999"]
+            },
+            "description": "**404 Not Found**, because step 1 of the PATCH recipe is `findById` and answer 404\nif it is absent.\n\nA PATCH must never create a row. If this returns 200 or 500, the `isPresent()` check\nis missing.\n\nThis is `testPatchUnknownBookIs404`."
+          },
+          "response": []
+        },
+        {
+          "name": "PUT - the same body, the opposite result",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"1984 (replaced)\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/books/{{bookId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["books", "{{bookId}}"]
+            },
+            "description": "Optional, and only works if you also write a `updateBook` method that builds a\n`new Book()` instead of loading the existing one. Otherwise Postman shows\n**405 Method Not Allowed** - which itself tells you the URL exists but the verb\ndoes not.\n\nWith PUT written that way, the same one-field body wipes the rest:\n\n    {\"title\":\"1984 (replaced)\",\"author\":null,\"publish-year\":null,\n     \"added-date\":null,\"category_name\":null}\n\nSame body, opposite outcome. **PATCH merges, PUT replaces.**\nThat difference is the reason an API needs both verbs.\n\nRestart the service to get \"1984\" back."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Transactions",
+      "description": "Borrowing and returning. This controller has no DTO today - it is the \"before\"\npicture, left in on purpose so you can see what the book endpoints used to look like.",
+      "item": [
+        {
+          "name": "Record a BORROW",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"BORROW\",\n  \"member\": {\n    \"id\": 1\n  },\n  \"book\": {\n    \"id\": {{bookId}}\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions"]
+            },
+            "description": "`POST /api/transactions` - **201 Created**.\n\nMember 1 is Alice Johnson; `data.sql` creates members 1 to 10.\n`type` is `BORROW` or `RETURN`.\n\nDo not send `transactionDate`. The controller sets it to today, server-side.\nA date the client can choose is a date the client can lie about.\n\nTwo nested objects here, for the same reason the old book POST had one. Writing\n`TransactionDTO` with a flat `member_id` and `book_id` is the exercise if you want\nto prove the pattern repeats - the solution branch already has it."
+          },
+          "response": []
+        },
+        {
+          "name": "Record a RETURN",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"RETURN\",\n  \"member\": {\n    \"id\": 1\n  },\n  \"book\": {\n    \"id\": {{bookId}}\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions"]
+            },
+            "description": "The same request with a different `type`.\n\nNothing stops a RETURN without a BORROW. The rule \"you can only return what you\nborrowed\" is business logic, and no controller here checks it yet."
+          },
+          "response": []
+        },
+        {
+          "name": "Record with an unknown member (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"BORROW\",\n  \"member\": {\n    \"id\": 999999\n  },\n  \"book\": {\n    \"id\": {{bookId}}\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions"]
+            },
+            "description": "**400 Bad Request** - `Member not found with ID: 999999`.\n\nThe controller checks the member and the book before saving anything. Both must\nexist."
+          },
+          "response": []
+        },
+        {
+          "name": "List all transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions"]
+            },
+            "description": "Empty on a fresh start, because `data.sql` seeds no transactions. Create one above\nfirst.\n\nLook at how much JSON one transaction produces: the whole book, the whole category\ninside it, and the whole member. Three tables in one response, and the client\nprobably wanted two names and a date.\n\nThat is the argument for a DTO, stated in bytes."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
