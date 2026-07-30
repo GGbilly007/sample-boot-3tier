@@ -9,23 +9,24 @@ in the order we will do them. Search the project for `TODO:` to find them all.
 
 ## Where the answers are
 
-The finished version lives in the previous repo,
-[`cnacha-mfu/sample-boot-basic`](https://github.com/cnacha-mfu/sample-boot-basic),
-on the **`spring-3tier-day4`** branch. Every step below links straight to the
-file that answers it.
+The finished version is in
+[`cnacha-mfu/sample-boot-3tier-solution`](https://github.com/cnacha-mfu/sample-boot-3tier-solution).
+Every step below links straight to the file that answers it.
 
-- 📖 **[SAMPLE-3TIER.md](https://github.com/cnacha-mfu/sample-boot-basic/blob/spring-3tier-day4/SAMPLE-3TIER.md)**
+- 📖 **[SAMPLE-3TIER.md](https://github.com/cnacha-mfu/sample-boot-3tier-solution/blob/main/SAMPLE-3TIER.md)**
   — the full write-up of everything we are about to do
-- 🌿 [browse the whole solution branch](https://github.com/cnacha-mfu/sample-boot-basic/tree/spring-3tier-day4)
+- 🌿 [browse the whole solution repo](https://github.com/cnacha-mfu/sample-boot-3tier-solution)
 - ⏪ [`spring-jpa-day3`](https://github.com/cnacha-mfu/sample-boot-basic/tree/spring-jpa-day3)
   — the same app *before* the split, if you want to show the starting point
 
-> **Two differences when you copy from the solution.** It is the same
-> architecture, but it was written from the day-3 sample rather than from our
-> in-class code:
+> **The solution goes further than we do today.** It also has DTOs, mappers and
+> controllers for Category, Member and Transaction. We only need `Book` — the rest
+> are there to show that this is a repeatable pattern and not a one-off.
 >
-> | | this project | solution branch |
-> | --- | --- | --- |
+> Paths and database now match this project exactly (`/api/books`, `spring_2026`),
+> so anything you copy across works unchanged.
+
+--- | --- | --- |
 > | paths | `/api/books` | `/books` (no prefix) |
 > | database | `spring_2026` / `springuser_2026` | `spring_db` / `spring_user` |
 >
@@ -91,7 +92,7 @@ boundary is enforced by the build, not by good intentions.
 
 **File:** `library-web-service/.../service/App.java`
 
-> 💡 **Solution:** [`App.java`](https://github.com/cnacha-mfu/sample-boot-basic/blob/spring-3tier-day4/library-web-service/src/main/java/th/mfu/service/App.java)
+> 💡 **Solution:** [`App.java`](https://github.com/cnacha-mfu/sample-boot-3tier-solution/blob/main/library-web-service/src/main/java/th/mfu/service/App.java)
 
 Start the service *before* changing anything. It will not start:
 
@@ -125,7 +126,7 @@ which *is* below `th.mfu.service`.
 
 **File:** `library-web-service/.../service/dto/BookDTO.java`
 
-> 💡 **Solution:** [`BookDTO.java`](https://github.com/cnacha-mfu/sample-boot-basic/blob/spring-3tier-day4/library-web-service/src/main/java/th/mfu/service/dto/BookDTO.java)
+> 💡 **Solution:** [`BookDTO.java`](https://github.com/cnacha-mfu/sample-boot-3tier-solution/blob/main/library-web-service/src/main/java/th/mfu/service/dto/BookDTO.java)
 
 First, show them what the API sends **today**:
 
@@ -168,7 +169,7 @@ Fill in the fields (all object types, never `int`):
 
 **File:** `library-web-service/.../service/dto/mapper/BookMapper.java`
 
-> 💡 **Solution:** [`BookMapper.java`](https://github.com/cnacha-mfu/sample-boot-basic/blob/spring-3tier-day4/library-web-service/src/main/java/th/mfu/service/dto/mapper/BookMapper.java)
+> 💡 **Solution:** [`BookMapper.java`](https://github.com/cnacha-mfu/sample-boot-3tier-solution/blob/main/library-web-service/src/main/java/th/mfu/service/dto/mapper/BookMapper.java)
 
 The DTO must be independent of the entity, so something has to copy between
 them — the **Assembler**. MapStruct writes it for us.
@@ -214,7 +215,7 @@ Nobody ever writes `new BookMapperImpl()`.
 
 **File:** `library-web-service/.../service/BookController.java`
 
-> 💡 **Solution:** [`BookController.java`](https://github.com/cnacha-mfu/sample-boot-basic/blob/spring-3tier-day4/library-web-service/src/main/java/th/mfu/service/BookController.java)
+> 💡 **Solution:** [`BookController.java`](https://github.com/cnacha-mfu/sample-boot-3tier-solution/blob/main/library-web-service/src/main/java/th/mfu/service/BookController.java)
 
 Every method becomes the same three steps:
 
@@ -247,7 +248,7 @@ category name without a second request — *"reduce the number of method calls"*
 
 **File:** `library-web-service/.../service/BookController.java`
 
-> 💡 **Solution:** [`BookController.java`](https://github.com/cnacha-mfu/sample-boot-basic/blob/spring-3tier-day4/library-web-service/src/main/java/th/mfu/service/BookController.java)
+> 💡 **Solution:** [`BookController.java`](https://github.com/cnacha-mfu/sample-boot-3tier-solution/blob/main/library-web-service/src/main/java/th/mfu/service/BookController.java)
 > (the `patchBook` method, next to `updateBook` so you can compare them)
 
 This is the centrepiece. Add:
@@ -303,7 +304,7 @@ Same body, opposite outcome. **That is why an API needs both verbs.**
 **Files:** `library-domain-model/.../domain/Book.java`, `Category.java`,
 `library-domain-model/pom.xml`
 
-> 💡 **Solution:** [`Book.java`](https://github.com/cnacha-mfu/sample-boot-basic/blob/spring-3tier-day4/library-domain-model/src/main/java/th/mfu/domain/Book.java) · [`Category.java`](https://github.com/cnacha-mfu/sample-boot-basic/blob/spring-3tier-day4/library-domain-model/src/main/java/th/mfu/domain/Category.java) · [`pom.xml`](https://github.com/cnacha-mfu/sample-boot-basic/blob/spring-3tier-day4/library-domain-model/pom.xml) — note the entities there have no Jackson import at all, and the pom has no `jackson-databind`.
+> 💡 **Solution:** [`Book.java`](https://github.com/cnacha-mfu/sample-boot-3tier-solution/blob/main/library-domain-model/src/main/java/th/mfu/domain/Book.java) · [`Category.java`](https://github.com/cnacha-mfu/sample-boot-3tier-solution/blob/main/library-domain-model/src/main/java/th/mfu/domain/Category.java) · [`pom.xml`](https://github.com/cnacha-mfu/sample-boot-3tier-solution/blob/main/library-domain-model/pom.xml) — note the entities there have no Jackson import at all, and the pom has no `jackson-databind`.
 
 Now that the DTO owns the wire format, delete from the entities:
 
@@ -333,7 +334,7 @@ asserted on a slide.
 
 **File:** `library-web-service/.../service/WebConfig.java`
 
-> 💡 **Solution:** [`WebConfig.java`](https://github.com/cnacha-mfu/sample-boot-basic/blob/spring-3tier-day4/library-web-service/src/main/java/th/mfu/service/WebConfig.java)
+> 💡 **Solution:** [`WebConfig.java`](https://github.com/cnacha-mfu/sample-boot-3tier-solution/blob/main/library-web-service/src/main/java/th/mfu/service/WebConfig.java)
 
 Open <http://localhost:8081/library.html> **first** and show the console:
 
@@ -368,7 +369,7 @@ diagram, it is something the browser can feel.
 
 **File:** `library-web-front/src/main/resources/static/library.html`
 
-> 💡 **Solution:** [`library.html`](https://github.com/cnacha-mfu/sample-boot-basic/blob/spring-3tier-day4/library-web-front/src/main/resources/static/library.html)
+> 💡 **Solution:** [`library.html`](https://github.com/cnacha-mfu/sample-boot-3tier-solution/blob/main/library-web-front/src/main/resources/static/library.html)
 
 Three `//TODO:` markers, all jQuery `$.ajax`:
 

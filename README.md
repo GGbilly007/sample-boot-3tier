@@ -10,10 +10,10 @@ This is a *skeleton*. Eight `//TODO:` markers are left for the live session.
 Continues from [`sample-boot-basic`](https://github.com/cnacha-mfu/sample-boot-basic)
 and leads into the `lab-web-3tier` lab.
 
-**Stuck?** The finished version is on the
-[`spring-3tier-day4`](https://github.com/cnacha-mfu/sample-boot-basic/tree/spring-3tier-day4)
-branch of `sample-boot-basic`, written up in
-[SAMPLE-3TIER.md](https://github.com/cnacha-mfu/sample-boot-basic/blob/spring-3tier-day4/SAMPLE-3TIER.md).
+**Stuck?** The finished version is in
+[`sample-boot-3tier-solution`](https://github.com/cnacha-mfu/sample-boot-3tier-solution),
+written up in
+[SAMPLE-3TIER.md](https://github.com/cnacha-mfu/sample-boot-3tier-solution/blob/main/SAMPLE-3TIER.md).
 Every step in [TODO.md](TODO.md) links to the exact file that answers it.
 
 ---
